@@ -76,7 +76,13 @@ const Index = () => {
           searchResults &&
           searchResults.length > 0 &&
           searchResults.map((searchResult) => (
-            <Link key={searchResult.id} to={`/weather/${searchResult.id}`}>
+            <Link
+              key={searchResult.id}
+              to={{
+                pathname: `/weather/${searchResult.id}`,
+                search: `?lat=${searchResult.latitude}&lon=${searchResult.longitude}`
+              }}
+            >
               <li className="py-3 px-4 cursor-pointer hover:bg-weather-secondary active:text-purple-300 active:ease-in-out active:duration-150 rounded-md">
                 {searchResult.admin1 ? (
                   <span>
