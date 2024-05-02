@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 
 const Index = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -76,7 +76,7 @@ const Index = () => {
           searchResults &&
           searchResults.length > 0 &&
           searchResults.map((searchResult) => (
-            <a key={searchResult.id} href={`/weather/${searchResult.id}`}>
+            <Link key={searchResult.id} to={`/weather/${searchResult.id}`}>
               <li className="py-3 px-4 cursor-pointer hover:bg-weather-secondary active:text-purple-300 active:ease-in-out active:duration-150 rounded-md">
                 {searchResult.admin1 ? (
                   <span>
@@ -89,7 +89,7 @@ const Index = () => {
                   </span>
                 )}
               </li>
-            </a>
+            </Link>
           ))}
       </ul>
     </form>

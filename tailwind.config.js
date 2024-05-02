@@ -12,9 +12,7 @@ export default {
       Roboto: ["Roboto, sans-serif"],
     },
     backgroundImage: {
-      //The background image is provided by loading.io
-      'clouds': "url(src/assets/clouds.svg)",
-    }
+      clouds: "url(src/assets/clouds.jpg)",
+    },
   },
-}
-
+};
