@@ -80,7 +80,7 @@ const Index = () => {
               key={searchResult.id}
               to={{
                 pathname: `/weather/${searchResult.id}`,
-                search: `?lat=${searchResult.latitude}&lon=${searchResult.longitude}`
+                search: `?city=${searchResult.name}&lat=${searchResult.latitude}&lon=${searchResult.longitude}`
               }}
             >
               <li className="py-3 px-4 cursor-pointer hover:bg-weather-secondary active:text-purple-300 active:ease-in-out active:duration-150 rounded-md">

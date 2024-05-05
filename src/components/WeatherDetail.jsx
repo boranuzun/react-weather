@@ -1,16 +1,19 @@
-import { useParams, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import moment from "moment";
+import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
 
 const WeatherDetail = () => {
   // Get the OpenWeatherMap API key from the environment variables
   const apiKey = import.meta.env.VITE_OPENWEATHERMAP_API_KEY;
 
   const [weatherData, setWeatherData] = useState(null);
-  const { id } = useParams();
+  const [isFavorite, setIsFavorite] = useState(false);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const latitude = queryParams.get("lat");
   const longitude = queryParams.get("lon");
+  const name = queryParams.get("city");
 
   useEffect(() => {
     fetch(
@@ -26,19 +29,190 @@ const WeatherDetail = () => {
       });
   }, [apiKey, latitude, longitude]);
 
-  return (
-    <>
-      <h1>Weather Detail for ID: {id}</h1>
-      <p>Latitude: {latitude}</p>
-      <p>Longitude: {longitude}</p>
+  const handleFavoriteClick = () => {
+    // Get the existing favorite locations array from local storage or initialize as an empty array
+    const favoriteLocations =
+      JSON.parse(localStorage.getItem("favoriteLocations")) || [];
 
-      {weatherData && (
-        <div>
-          <p>Current Temperature: {weatherData.current.temp}°C</p>
-          {/* Display other weather information as needed */}
+    if (!isFavorite) {
+      // If MdFavoriteBorder is being displayed, add the current location to the favoriteLocations array
+      const newFavoriteLocation = { latitude, longitude };
+      localStorage.setItem(
+        "favoriteLocations",
+        JSON.stringify([...favoriteLocations, newFavoriteLocation])
+      );
+    } else {
+      // If MdFavorite is being displayed, remove the current location from the favoriteLocations array
+      const updatedFavoriteLocations = favoriteLocations.filter(
+        (location) =>
+          location.latitude !== latitude && location.longitude !== longitude
+      );
+      localStorage.setItem(
+        "favoriteLocations",
+        JSON.stringify(updatedFavoriteLocations)
+      );
+    }
+
+    setIsFavorite((prevFavorite) => !prevFavorite);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center my-1 p-10 text-gray-700 gap-10">
+      {isFavorite ? (
+        <MdFavorite
+          className="text-rose-600 text-5xl self-end"
+          onClick={handleFavoriteClick}
+        />
+      ) : (
+        <MdFavoriteBorder
+          className="text-rose-600 text-5xl self-end"
+          onClick={handleFavoriteClick}
+        />
+      )}
+      {weatherData ? (
+        <div className="w-full bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
+          <div className="flex justify-between">
+            <div className="flex flex-col">
+              <span className="text-6xl font-bold">
+                {Math.round(weatherData.current.temp)}°C
+              </span>
+              <span className="font-semibold mt-1 text-gray-500 text-lg">
+                {name}
+              </span>
+              <span className="font-semibold text-gray-500 text-lg">
+                {moment()
+                  .utcOffset(weatherData.timezone_offset / 60)
+                  .format("HH:mm")}
+              </span>
+              <span className="mt-1 text-gray-500 flex flex-col gap-1 lg:gap-2 sm:flex-row">
+                <span>
+                  Sunrise:{" "}
+                  <b>
+                    {new Date(
+                      weatherData.current.sunrise * 1000
+                    ).toLocaleTimeString("fr-FR", {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })}
+                  </b>
+                </span>
+                <span className="hidden sm:inline">-</span>
+                <span>
+                  Sunset:{" "}
+                  <b>
+                    {new Date(
+                      weatherData.current.sunset * 1000
+                    ).toLocaleTimeString("fr-FR", {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })}
+                  </b>
+                </span>
+              </span>
+              <span className="mt-1 text-gray-500 flex flex-col gap-1 lg:gap-2 lg:flex-row">
+                <span className="capitalize">
+                  <b>{weatherData.current.weather[0].description}</b>
+                </span>
+                <span className="hidden lg:inline">/</span>
+                <span>
+                  Feels like{" "}
+                  <b>{Math.round(weatherData.current.feels_like)}°C</b>{" "}
+                </span>
+                <span className="hidden lg:inline">/</span>
+                <span>
+                  Wind: <b>{weatherData.current.wind_speed} km/h</b>
+                </span>
+              </span>
+            </div>
+            <img
+              className="h-32 w-32 fill-current"
+              src={`http://openweathermap.org/img/wn/${weatherData.current.weather[0].icon}@2x.png`}
+              alt=""
+            />
+          </div>
+
+          <div className="flex justify-between mt-12">
+            <div className="flex flex-row gap-10 overflow-auto">
+              {weatherData.hourly.map((hour) => (
+                <div
+                  key={hour.dt}
+                  className="flex flex-col items-center text-center"
+                >
+                  <span className="font-semibold text-lg">
+                    {Math.round(hour.temp)}°C
+                  </span>
+                  <img
+                    className="w-auto h-[50px] object-cover"
+                    src={`http://openweathermap.org/img/wn/${hour.weather[0].icon}@2x.png`}
+                    alt=""
+                  />
+                  <span className="font-semibold mt-1">
+                    {new Date(hour.dt * 1000).toLocaleTimeString("fr-FR", {
+                      hour: "numeric",
+                      minute: "numeric",
+                    })}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="flex flex-col space-y-6 w-full bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
+            {weatherData.daily.map((day) => (
+              <div key={day.dt} className="flex justify-between items-center">
+                <span className="font-semibold text-lg w-1/6 flex flex-row gap-1">
+                  <span>
+                    {new Date(day.dt * 1000).toLocaleDateString("en-us", {
+                      weekday: "short",
+                    })}
+                  </span>
+                  <span>
+                    {new Date(day.dt * 1000).toLocaleDateString("en-us", {
+                      day: "numeric",
+                    })}
+                  </span>
+                </span>
+                <div className="items-center justify-end pr-10 gap-2 hidden sm:inline">
+                  <span className="font-semibold">{day.humidity}%</span>
+                </div>
+                <img
+                  className="w-[50px] h-[50px] object-cover"
+                  src={`http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
+                  alt=""
+                />
+                <span className="font-semibold text-lg text-right flex flex-col sm:flex-row sm:gap-1">
+                  <span>{Math.round(day.temp.min)}° </span>
+                  <span className="hidden sm:inline">/</span>
+                  <span>{Math.round(day.temp.max)}°</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col items-center py-12 text-3xl">
+          <div role="status">
+            <svg
+              aria-hidden="true"
+              className="w-8 h-8 mr-2 text-gray-200 animate-spin fill-weather-primary"
+              viewBox="0 0 100 101"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+                fill="currentColor"
+              />
+              <path
+                d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+                fill="currentFill"
+              />
+            </svg>
+            <span className="sr-only">Loading...</span>
+          </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

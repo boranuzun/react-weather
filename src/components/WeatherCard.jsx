@@ -1,73 +1,122 @@
-import moment from 'moment';
+/* eslint-disable react/prop-types */
+import { useEffect, useState } from "react";
+import moment from "moment";
 import { WiCloud } from "react-icons/wi";
 
-const WeatherCard = () => {
-  const currentDate = moment().format("dddd D MMMM YYYY");
+const WeatherCard = ({ location, onDelete }) => {
+  // State to store weather data
+  const [weatherData, setWeatherData] = useState(null);
 
+  // Get the OpenWeatherMap API key from the environment variables
+  const apiKey = import.meta.env.VITE_OPENWEATHERMAP_API_KEY;
+
+  // Fetch weather data when component mounts or location changes
+  useEffect(() => {
+    if (!apiKey) {
+      console.error("OpenWeatherMap API key not found!");
+      return;
+    }
+
+    fetch(
+      `https://api.openweathermap.org/data/2.5/onecall?lat=${location.latitude}&lon=${location.longitude}&appid=${apiKey}&units=metric`
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Failed to fetch weather data");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setWeatherData(data);
+      })
+      .catch((error) => {
+        console.error("Error fetching weather data: ", error);
+      });
+  }, [apiKey, location.latitude, location.longitude]);
+
+  // Function to handle card deletion
   const deleteCard = () => {
-    // Function to delete the card
-    console.log("Card deleted");
+    onDelete(location);
   };
 
+  // Render the WeatherCard component
   return (
     <>
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col bg-white rounded p-4 w-full max-w-xs relative">
-          <button
-            onClick={deleteCard}
-            className="absolute top-0 right-0 p-2 cursor-pointer"
+      <div className="flex flex-col bg-white rounded p-4 w-full max-w-xs relative shadow-lg">
+        <button
+          onClick={deleteCard}
+          className="absolute top-0 right-0 p-2 cursor-pointer"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-6 w-6 text-gray-500 hover:text-gray-700"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-6 w-6 text-gray-500 hover:text-gray-700"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2"
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
-          </button>
-          <div className="font-bold text-xl">Carouge</div>
-          <div className="text-sm text-gray-500">{currentDate}</div>
-          <WiCloud className="mt-6 text-9xl self-center inline-flex items-center justify-center rounded-lg text-indigo-400 h-24 w-24" />
-          <div className="flex flex-row items-center justify-center mt-6">
-            <div className="font-medium text-6xl">24°</div>
-            <div className="flex flex-col items-center ml-6">
-              <div>Cloudy</div>
-              <div className="mt-1">
-                <span className="text-sm">
-                  <i className="far fa-long-arrow-up"></i>
-                </span>
-                <span className="text-sm font-light text-gray-500">28°C</span>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+        <div className="font-bold text-xl">Name</div>
+        <div className="text-sm text-gray-500">
+          {moment().format("dddd, D MMMM YYYY")}
+        </div>
+        <div className="flex items-center justify-center mt-2">
+          <WiCloud className="text-indigo-400 h-16 w-16" />
+          {weatherData && (
+            <div className="ml-4">
+              <div className="font-medium text-3xl">
+                {weatherData.current.temp}°C
               </div>
-              <div>
-                <span className="text-sm">
-                  <i className="far fa-long-arrow-down"></i>
-                </span>
-                <span className="text-sm font-light text-gray-500">20°C</span>
+              <div className="text-sm text-gray-500">
+                {weatherData.current.weather[0].description}
+              </div>
+            </div>
+          )}
+        </div>
+        {weatherData && (
+          <div className="flex justify-between mt-4">
+            <div className="flex flex-col items-center">
+              <div className="font-medium text-sm">High</div>
+              <div className="text-sm text-gray-500">
+                {weatherData.daily[0].temp.max}°C
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="font-medium text-sm">Low</div>
+              <div className="text-sm text-gray-500">
+                {weatherData.daily[0].temp.min}°C
+              </div>
+            </div>
+            <div className="flex flex-col items-center">
+              <div className="font-medium text-sm">Wind</div>
+              <div className="text-sm text-gray-500">
+                {weatherData.current.wind_speed} km/h
               </div>
             </div>
           </div>
-          <div className="flex flex-row justify-between mt-6">
-            <div className="flex flex-col items-center">
-              <div className="font-medium text-sm">Wind</div>
-              <div className="text-sm text-gray-500">9k/h</div>
-            </div>
+        )}
+        {weatherData && (
+          <div className="flex justify-between mt-2">
             <div className="flex flex-col items-center">
               <div className="font-medium text-sm">Humidity</div>
-              <div className="text-sm text-gray-500">68%</div>
+              <div className="text-sm text-gray-500">
+                {weatherData.current.humidity}%
+              </div>
             </div>
             <div className="flex flex-col items-center">
               <div className="font-medium text-sm">Visibility</div>
-              <div className="text-sm text-gray-500">10km</div>
+              <div className="text-sm text-gray-500">
+                {weatherData.current.visibility} km
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </>
   );
