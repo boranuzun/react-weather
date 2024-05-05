@@ -2,44 +2,31 @@
 import { useEffect, useState } from "react";
 import moment from "moment";
 import { WiCloud } from "react-icons/wi";
+import { fetchWeatherData } from "../utils/weatherAPI.js";
 
 const WeatherCard = ({ location, onDelete }) => {
-  // State to store weather data
   const [weatherData, setWeatherData] = useState(null);
 
   // Get the OpenWeatherMap API key from the environment variables
   const apiKey = import.meta.env.VITE_OPENWEATHERMAP_API_KEY;
 
-  // Fetch weather data when component mounts or location changes
   useEffect(() => {
     if (!apiKey) {
       console.error("OpenWeatherMap API key not found!");
       return;
     }
 
-    fetch(
-      `https://api.openweathermap.org/data/2.5/onecall?lat=${location.latitude}&lon=${location.longitude}&appid=${apiKey}&units=metric`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Failed to fetch weather data");
-        }
-        return response.json();
-      })
-      .then((data) => {
+    fetchWeatherData(location.latitude, location.longitude, apiKey).then(
+      (data) => {
         setWeatherData(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching weather data: ", error);
-      });
+      }
+    );
   }, [apiKey, location.latitude, location.longitude]);
 
-  // Function to handle card deletion
   const deleteCard = () => {
     onDelete(location);
   };
 
-  // Render the WeatherCard component
   return (
     <>
       <div className="flex flex-col bg-white rounded p-4 w-full max-w-xs relative shadow-lg">

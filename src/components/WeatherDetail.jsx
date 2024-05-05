@@ -2,6 +2,7 @@ import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import moment from "moment";
 import { MdFavorite, MdFavoriteBorder } from "react-icons/md";
+import { fetchWeatherData } from "../utils/weatherAPI.js";
 
 const WeatherDetail = () => {
   // Get the OpenWeatherMap API key from the environment variables
@@ -16,17 +17,14 @@ const WeatherDetail = () => {
   const name = queryParams.get("city");
 
   useEffect(() => {
-    fetch(
-      `https://api.openweathermap.org/data/2.5/onecall?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        setWeatherData(data);
-        console.log("weatherData: ", data);
-      })
-      .catch((error) => {
-        console.error("Error fetching weather data: ", error);
-      });
+    if (!apiKey) {
+      console.error("OpenWeatherMap API key not found!");
+      return;
+    }
+
+    fetchWeatherData(latitude, longitude, apiKey).then((data) => {
+      setWeatherData(data);
+    });
   }, [apiKey, latitude, longitude]);
 
   const handleFavoriteClick = () => {
