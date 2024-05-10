@@ -1,19 +1,30 @@
 /* eslint-disable react/prop-types */
-import { useEffect, useState } from "react";
-import moment from "moment";
-import { WiCloud } from "react-icons/wi";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import moment from "moment-timezone";
+
 import { fetchWeatherData } from "../utils/weatherAPI.js";
 
 const WeatherCard = ({ location, onDelete }) => {
   const [weatherData, setWeatherData] = useState(null);
-
-  // Get the OpenWeatherMap API key from the environment variables
+  const [locationName, setLocationName] = useState("");
   const apiKey = import.meta.env.VITE_OPENWEATHERMAP_API_KEY;
 
   useEffect(() => {
     if (!apiKey) {
       console.error("OpenWeatherMap API key not found!");
       return;
+    }
+
+    const favoriteLocations =
+      JSON.parse(localStorage.getItem("favoriteLocations")) || [];
+    const storedLocation = favoriteLocations.find(
+      (loc) =>
+        loc.latitude === location.latitude &&
+        loc.longitude === location.longitude
+    );
+    if (storedLocation) {
+      setLocationName(storedLocation.name);
     }
 
     fetchWeatherData(location.latitude, location.longitude, apiKey).then(
@@ -29,7 +40,11 @@ const WeatherCard = ({ location, onDelete }) => {
 
   return (
     <>
-      <div className="flex flex-col bg-white rounded p-4 w-full max-w-xs relative shadow-lg">
+      <div className="flex flex-col bg-white rounded p-4 w-full max-w-md relative shadow-lg">
+        <Link
+          to={`/weather/${locationName}?lat=${location.latitude}&lon=${location.longitude}`}
+          className="absolute top-0 left-0 right-0 bottom-0"
+        ></Link>
         <button
           onClick={deleteCard}
           className="absolute top-0 right-0 p-2 cursor-pointer"
@@ -49,16 +64,25 @@ const WeatherCard = ({ location, onDelete }) => {
             />
           </svg>
         </button>
-        <div className="font-bold text-xl">Name</div>
+        <div className="font-bold text-xl">{locationName}</div>
         <div className="text-sm text-gray-500">
-          {moment().format("dddd, D MMMM YYYY")}
+          {weatherData &&
+            moment()
+              .tz(weatherData.timezone)
+              .format("dddd, D MMMM YYYY, HH:mm")}
         </div>
         <div className="flex items-center justify-center mt-2">
-          <WiCloud className="text-indigo-400 h-16 w-16" />
+          {weatherData && (
+            <img
+              className="h-32 w-32 fill-current"
+              src={`http://openweathermap.org/img/wn/${weatherData.current.weather[0].icon}@2x.png`}
+              alt=""
+            />
+          )}
           {weatherData && (
             <div className="ml-4">
               <div className="font-medium text-3xl">
-                {weatherData.current.temp}°C
+                {Math.round(weatherData.current.temp)}°C
               </div>
               <div className="text-sm text-gray-500">
                 {weatherData.current.weather[0].description}

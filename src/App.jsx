@@ -3,7 +3,8 @@ import Index from "./components/Index";
 import WeatherDetail from "./components/WeatherDetail";
 import SiteFooter from "./components/SiteFooter";
 import SiteHeader from "./components/SiteHeader";
-import FavoriteLocation from "./components/FavoriteLocation"; // Corrected import
+import FavoriteLocation from "./components/FavoriteLocation";
+import Settings from "./components/Settings";
 import { Routes, Route } from "react-router-dom";
 
 function App() {
@@ -13,8 +14,9 @@ function App() {
       <div className="mx-auto sm:px-6 lg:px-8 grow items-start w-full max-w-5xl">
         <Routes>
           <Route path="/" element={<Index />} />
-          <Route path="/weather/:id" element={<WeatherDetail />} />
-          <Route path="/favorites" element={<FavoriteLocation />} /> {/* Added route for FavoriteLocations */}
+          <Route path="/weather/:city" element={<WeatherDetail />} />
+          <Route path="/favorites" element={<FavoriteLocation />} />
+          <Route path="/settings" element={<Settings/>} />
         </Routes>
       </div>
       <SiteFooter />

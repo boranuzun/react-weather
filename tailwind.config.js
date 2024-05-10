@@ -13,6 +13,7 @@ export default {
     },
     backgroundImage: {
       clouds: "url(src/assets/clouds.jpg)",
+      noise: "url(src/assets/noise.png)",
     },
   },
 };

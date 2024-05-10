@@ -11,7 +11,7 @@ const SiteFooter = () => {
               &copy;<b className="ml-1">{currentYear}</b> — Boran UZUN
             </p>
           </div>
-          <div className="my-3 text-white">
+          {/* <div className="my-3 text-white">
             <p>
               Background image by{" "}
               <a
@@ -21,7 +21,7 @@ const SiteFooter = () => {
                 Freepik
               </a>
             </p>
-          </div>
+          </div> */}
         </section>
       </footer>
     </>
