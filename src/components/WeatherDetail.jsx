@@ -18,6 +18,13 @@ const WeatherDetail = () => {
   const name = queryParams.get("city");
 
   useEffect(() => {
+    const favoriteLocations =
+      JSON.parse(localStorage.getItem("favoriteLocations")) || [];
+    const isLocationFavorite = favoriteLocations.some(
+      (loc) => loc.latitude === latitude && loc.longitude === longitude
+    );
+    setIsFavorite(isLocationFavorite);
+
     if (!apiKey) {
       console.error("OpenWeatherMap API key not found!");
       return;
@@ -29,19 +36,16 @@ const WeatherDetail = () => {
   }, [apiKey, latitude, longitude]);
 
   const handleFavoriteClick = () => {
-    // Get the existing favorite locations array from local storage or initialize as an empty array
     const favoriteLocations =
       JSON.parse(localStorage.getItem("favoriteLocations")) || [];
 
     if (!isFavorite) {
-      // If MdFavoriteBorder is being displayed, add the current location to the favoriteLocations array
-      const newFavoriteLocation = { name, latitude, longitude }; // Include the name here
+      const newFavoriteLocation = { name, latitude, longitude };
       localStorage.setItem(
         "favoriteLocations",
         JSON.stringify([...favoriteLocations, newFavoriteLocation])
       );
     } else {
-      // If MdFavorite is being displayed, remove the current location from the favoriteLocations array
       const updatedFavoriteLocations = favoriteLocations.filter(
         (location) =>
           !(location.latitude === latitude && location.longitude === longitude)
@@ -57,22 +61,23 @@ const WeatherDetail = () => {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-center my-1 p-10 text-gray-700 gap-10">
-        <div className="flex justify-between">
-          <IoMdArrowRoundBack className="text-gray-600 text-5xl self-start" />
-          {isFavorite ? (
-            <MdFavorite
-              className="text-rose-600 text-5xl self-end"
-              onClick={handleFavoriteClick}
-            />
-          ) : (
-            <MdFavoriteBorder
-              className="text-rose-600 text-5xl self-end"
-              onClick={handleFavoriteClick}
-            />
-          )}
-        </div>
+      <div className="flex justify-between mt-10 px-10">
+        <IoMdArrowRoundBack className="text-gray-600 text-5xl self-start" />
+        {isFavorite ? (
+          <MdFavorite
+            className="text-rose-600 text-5xl self-end"
+            onClick={handleFavoriteClick}
+          />
+        ) : (
+          <MdFavoriteBorder
+            className="text-rose-600 text-5xl self-end"
+            onClick={handleFavoriteClick}
+          />
+        )}
+      </div>
 
+      {/* Banner */}
+      <div className="flex flex-col items-center justify-center my-1 p-10 text-gray-700 gap-10">
         {weatherData ? (
           <div className="w-full bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
             <div className="flex justify-between">
@@ -135,6 +140,7 @@ const WeatherDetail = () => {
               />
             </div>
 
+            {/* Hourly Forecast */}
             <div className="flex justify-between mt-12">
               <div className="flex flex-row gap-10 overflow-auto">
                 {weatherData.hourly.map((hour) => (
@@ -159,38 +165,6 @@ const WeatherDetail = () => {
                   </div>
                 ))}
               </div>
-            </div>
-
-            <div className="flex flex-col space-y-6 w-full bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
-              {weatherData.daily.map((day) => (
-                <div key={day.dt} className="flex justify-between items-center">
-                  <span className="font-semibold text-lg w-1/6 flex flex-row gap-1">
-                    <span>
-                      {new Date(day.dt * 1000).toLocaleDateString("en-us", {
-                        weekday: "short",
-                      })}
-                    </span>
-                    <span>
-                      {new Date(day.dt * 1000).toLocaleDateString("en-us", {
-                        day: "numeric",
-                      })}
-                    </span>
-                  </span>
-                  <div className="items-center justify-end pr-10 gap-2 hidden sm:inline">
-                    <span className="font-semibold">{day.humidity}%</span>
-                  </div>
-                  <img
-                    className="w-[50px] h-[50px] object-cover"
-                    src={`http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
-                    alt=""
-                  />
-                  <span className="font-semibold text-lg text-right flex flex-col sm:flex-row sm:gap-1">
-                    <span>{Math.round(day.temp.min)}° </span>
-                    <span className="hidden sm:inline">/</span>
-                    <span>{Math.round(day.temp.max)}°</span>
-                  </span>
-                </div>
-              ))}
             </div>
           </div>
         ) : (
@@ -217,6 +191,43 @@ const WeatherDetail = () => {
           </div>
         )}
       </div>
+
+      {/* Weekly Forecast */}
+      {weatherData && (
+        <div className="p-10 pt-0">
+          <div className="flex flex-col space-y-6 w-full bg-white p-10 rounded-xl ring-8 ring-white ring-opacity-40">
+            {weatherData.daily.map((day) => (
+              <div key={day.dt} className="flex justify-between items-center">
+                <span className="font-semibold text-lg w-1/6 flex flex-row gap-1">
+                  <span>
+                    {new Date(day.dt * 1000).toLocaleDateString("en-us", {
+                      weekday: "short",
+                    })}
+                  </span>
+                  <span>
+                    {new Date(day.dt * 1000).toLocaleDateString("en-us", {
+                      day: "numeric",
+                    })}
+                  </span>
+                </span>
+                <div className="items-center justify-end pr-10 gap-2 hidden sm:inline">
+                  <span className="font-semibold">{day.humidity}%</span>
+                </div>
+                <img
+                  className="w-[50px] h-[50px] object-cover"
+                  src={`http://openweathermap.org/img/wn/${day.weather[0].icon}@2x.png`}
+                  alt=""
+                />
+                <span className="font-semibold text-lg text-right flex flex-col sm:flex-row sm:gap-1">
+                  <span>{Math.round(day.temp.min)}° </span>
+                  <span className="hidden sm:inline">/</span>
+                  <span>{Math.round(day.temp.max)}°</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </>
   );
 };

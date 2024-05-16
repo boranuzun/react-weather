@@ -4,7 +4,7 @@ import { WiDayCloudy } from "react-icons/wi";
 const SiteHeader = () => {
   return (
     <>
-      <header className="bg-weather-primary bg-opacity-30 shadow-lg text-white py-4 px-6">
+      <header className="bg-neutral-700 bg-opacity-30 shadow-lg text-white py-4 px-6">
         <div className="container mx-auto max-w-7xl">
           <nav className="flex justify-between items-center">
             <Link to="/" className="flex items-center">

@@ -2,7 +2,7 @@ import { SketchPicker } from "react-color";
 import { useState, useEffect } from "react";
 
 const Settings = () => {
-  const [color, setColor] = useState("#28518a");
+  const [color, setColor] = useState("#000000");
 
   useEffect(() => {
     const storedColor = localStorage.getItem("backgroundColor");
