@@ -61,6 +61,7 @@ const WeatherDetail = () => {
 
   return (
     <>
+      {/* Buttons */}
       <div className="flex justify-between mt-10 px-10">
         <IoMdArrowRoundBack className="text-gray-600 text-5xl self-start" />
         {isFavorite ? (
